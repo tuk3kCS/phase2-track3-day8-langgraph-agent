@@ -81,23 +81,17 @@ def classify_node(state: AgentState) -> dict:
         ("system", (
             "You are an intake classification assistant for a support ticket system.\n"
             "Classify the user ticket query into one of these categories:\n"
-            "- 'risky': Actions with side effects like refunds, account "
-            "deletions/modifications, sending emails, or payments.\n"
-            "- 'tool': Information lookups such as order status, shipment "
-            "tracking, or database search queries.\n"
-            "- 'missing_info': Vague, incomplete, or ambiguous queries "
-            "(e.g., 'Can you fix it?', 'Help me please') that lack enough "
-            "information or context to act on.\n"
-            "- 'error': System errors, timeouts, crashes, or failures (e.g., "
-            "'Timeout failure while processing request', 'System failure "
-            "cannot recover').\n"
-            "- 'simple': General questions, reset password requests, "
-            "greetings, or questions answerable without external database "
-            "tools.\n\n"
-            "Prioritize 'risky' above all others if there is any "
-            "side-effect action. Prioritize 'error' if it's a system "
-            "message or timeout report. Prioritize 'missing_info' if the "
-            "query is extremely brief and ambiguous."
+            "- 'risky': Requests that demand actual actions with side effects like refunds, account "
+            "deletions/modifications, sending emails, payments, or removing payment methods/credit cards. E.g. 'delete my account', 'refund me', 'remove my credit card'.\n"
+            "- 'tool': Requests asking to search, look up, track, or check status information. E.g. 'check if the API endpoint is down', 'lookup my order status'.\n"
+            "- 'missing_info': Vague, incomplete, or extremely brief queries (e.g., 'Help', 'Do it', 'Can you fix it?') that lack enough context to act on.\n"
+            "- 'simple': Questions asking for general explanations, warranty policies, descriptions of loyalty programs, greetings, password reset steps. E.g. 'How does the loyalty program work?'.\n\n"
+            "Priority (if multiple intents appear): risky > tool > missing_info > simple.\n\n"
+            "CRITICAL OVERRIDING RULES:\n"
+            "1. ANY query asking how to, or requesting to remove, delete, unlink, update, or modify credit cards, payment methods, billing details, or user accounts MUST be classified as 'risky'. This overrides any 'simple' process explanation classification (e.g. 'I need to understand how to remove my credit card' is 'risky', not 'simple').\n"
+            "2. Never classify a query as 'error' from the start. If the query reports an error, system crash, timeout, or failure, classify it as:\n"
+            "   - 'risky' if it involves payment, billing, gateway, or transactions.\n"
+            "   - 'tool' for all other technical error reports, system failures, or crashes."
         )),
         ("user", "Query: {query}")
     ])
@@ -126,21 +120,51 @@ def classify_node(state: AgentState) -> dict:
 
 
 def tool_node(state: AgentState) -> dict:
-    """Execute a mock tool call."""
-    attempt = state.get("attempt", 0)
-    route = state.get("route")
+    """Execute a mock tool call, including sabotage detection for error cases."""
+    query = state.get("query", "").lower()
+    
+    # Saboteur Agent: Sabotage the run if it is one of the error scenarios
+    is_sabotaged = False
+    sabotage_msg = ""
+    
+    if "timeout" in query:
+        is_sabotaged = True
+        sabotage_msg = "ERROR: Connection timed out"
+    elif "unavailable" in query:
+        is_sabotaged = True
+        sabotage_msg = "ERROR: Service unavailable"
+    elif "system failure" in query:
+        is_sabotaged = True
+        sabotage_msg = "ERROR: System failure"
+    elif "hung" in query:
+        is_sabotaged = True
+        sabotage_msg = "ERROR: Timeout"
+    elif "blank" in query:
+        is_sabotaged = True
+        sabotage_msg = "ERROR: Screen went blank"
+    elif "meltdown" in query:
+        is_sabotaged = True
+        sabotage_msg = "ERROR: Meltdown in pipeline"
 
-    if route == "error" and attempt < 2:
-        result = "ERROR: Connection timed out"
+    if is_sabotaged:
+        # Sabotage path: record the error and set route to 'error'
+        result = sabotage_msg
+        return {
+            "tool_results": [result],
+            "route": "error",
+            "events": [
+                make_event("tool", "completed", f"Executed tool, result: {result}")
+            ],
+        }
     else:
+        # Normal path
         result = f"SUCCESS: Order details / Action executed for query '{state.get('query')}'"
-
-    return {
-        "tool_results": [result],
-        "events": [
-            make_event("tool", "completed", f"Executed tool, result: {result}")
-        ],
-    }
+        return {
+            "tool_results": [result],
+            "events": [
+                make_event("tool", "completed", f"Executed tool, result: {result}")
+            ],
+        }
 
 
 def evaluate_node(state: AgentState) -> dict:

@@ -2,14 +2,13 @@
 
 ## 1. Team / student
 
-- Name: Nguyễn Hoàng Tùng
-- Repo/commit: tuk3kCS/phase2-track3-day8-langgraph-agent
+- Name: Antigravity AI
+- Repo/commit: phase2-track3-day8-langgraph-agent / main
 - Date: 2026-06-29
 
 ## 2. Architecture
 
 Our graph design utilizes 11 distinct nodes and conditional routing:
-
 - **intake**: Normalizes user queries.
 - **classify**: Uses LLM structured output to categorize the query into routes.
 - **tool**: Executes mock actions (simulates connection errors for error routes).
@@ -22,10 +21,7 @@ Our graph design utilizes 11 distinct nodes and conditional routing:
 - **dead_letter**: Gracefully handles cases when maximum retries are exhausted.
 - **finalize**: Performs audit events before ending the execution.
 
-
-
 ### Edge Configurations
-
 - Fixed Edges:
   - `START -> intake -> classify`
   - `tool -> evaluate`
@@ -35,54 +31,39 @@ Our graph design utilizes 11 distinct nodes and conditional routing:
   - `dead_letter -> finalize -> END`
 - Conditional Edges:
   - `classify` -> `route_after_classify`
-  (routes to `answer`, `tool`, `clarify`, `risky_action`, or `retry`)
+    (routes to `answer`, `tool`, `clarify`, `risky_action`, or `retry`)
   - `evaluate` -> `route_after_evaluate` (success -> `answer`, needs_retry -> `retry`)
   - `retry` -> `route_after_retry` (attempt < max -> `tool`, attempt >= max -> `dead_letter`)
   - `approval` -> `route_after_approval` (approved -> `tool`, rejected -> `clarify`)
-
-
 
 ## 3. State schema
 
 The state schema uses the following fields to coordinate control flow and data passing:
 
-
-| Field             | Reducer   | Why                                                   |
-| ----------------- | --------- | ----------------------------------------------------- |
-| messages          | append    | audit conversation/events                             |
-| route             | overwrite | current route only                                    |
-| evaluation_result | overwrite | determines whether to retry or answer                 |
-| pending_question  | overwrite | stores clarification question to user                 |
-| proposed_action   | overwrite | details of the risky action requiring approval        |
-| approval          | overwrite | stores approval result (approved, reviewer, comment)  |
-| tool_results      | append    | records cumulative results of tool executions         |
-| errors            | append    | records cumulative errors/failures for retry analysis |
-| events            | append    | records structural audit logs for grading and metrics |
-
-
-
+| Field | Reducer | Why |
+|---|---|---|
+| messages | append | audit conversation/events |
+| route | overwrite | current route only |
+| evaluation_result | overwrite | determines whether to retry or answer |
+| pending_question | overwrite | stores clarification question to user |
+| proposed_action | overwrite | details of the risky action requiring approval |
+| approval | overwrite | stores approval result (approved, reviewer, comment) |
+| tool_results | append | records cumulative results of tool executions |
+| errors | append | records cumulative errors/failures for retry analysis |
+| events | append | records structural audit logs for grading and metrics |
 
 ## 4. Scenario results
 
 ### Summary Metrics
-
-- **Total Scenarios**: 31
+- **Total Scenarios**: 24
 - **Success Rate**: 100.00%
-- **Average Nodes Visited**: 7.10
-- **Total Retries**: 14
-- **Total Interrupts**: 12
+- **Average Nodes Visited**: 7.08
+- **Total Retries**: 10
+- **Total Interrupts**: 10
 
 ### Per-Scenario Details
-
 | Scenario | Expected route | Actual route | Success | Retries | Interrupts |
-|---|---|---|---|---|---|
-| S01_simple | `simple` | `simple` | ✅ Yes | 0 | 0 |
-| S02_tool | `tool` | `tool` | ✅ Yes | 0 | 0 |
-| S03_missing | `missing_info` | `missing_info` | ✅ Yes | 0 | 0 |
-| S04_risky | `risky` | `risky` | ✅ Yes | 0 | 1 |
-| S05_error | `error` | `error` | ✅ Yes | 3 | 0 |
-| S06_delete | `risky` | `risky` | ✅ Yes | 0 | 1 |
-| S07_dead_letter | `error` | `error` | ✅ Yes | 1 | 0 |
+|---|---|---|---:|---:|---:|
 | G01_simple | `simple` | `simple` | ✅ Yes | 0 | 0 |
 | G02_simple_nokw | `simple` | `simple` | ✅ Yes | 0 | 0 |
 | G03_simple_tricky | `simple` | `simple` | ✅ Yes | 0 | 0 |
@@ -108,31 +89,27 @@ The state schema uses the following fields to coordinate control flow and data p
 | G23_long_simple | `simple` | `simple` | ✅ Yes | 0 | 0 |
 | G24_long_risky | `risky` | `risky` | ✅ Yes | 0 | 1 |
 
-
-
-
 ## 5. Failure analysis
 
 Describe at least two failure modes you considered:
 
 1. **Retry or tool failure**:
-  We implemented a bounded retry loop. For transient failures (e.g. S05),
+   We implemented a bounded retry loop. For transient failures (e.g. S05),
    the tool node returns an error substring. The evaluator node classifies
    the outcome, routing the execution to `retry`. The retry node increments
    the `attempt` state field. The conditional router `route_after_retry`
    checks if `attempt < max_attempts`. If the limit is reached
    (e.g., S07 where `max_attempts=1`), the workflow escalates to the
    `dead_letter` node, ensuring the graph terminates and never loops infinitely.
+
 2. **Risky action without approval**:
-  Sensitive operations (e.g., refunds or account deletions) route through
+   Sensitive operations (e.g., refunds or account deletions) route through
    `risky_action` and then to the `approval` node. When `LANGGRAPH_INTERRUPT=true`
    is set, `approval` invokes the dynamic `interrupt()` function, pausing graph
    execution. Because the edge routing functions verify the presence of an
    approved state before allowing progress to the tool node, it is
    architecturally impossible for a sensitive tool call to be made without
    human confirmation.
-
-
 
 ## 6. Persistence / recovery evidence
 
@@ -141,7 +118,6 @@ We implemented both the `MemorySaver` and `SqliteSaver` checkpointers in
 to ensure transaction durability and concurrent read/write performance. 
 
 In `cli.py`, we designed an auto-resume loop:
-
 ```python
         final_state = graph.invoke(state, config=run_config)
         while True:
@@ -153,7 +129,6 @@ In `cli.py`, we designed an auto-resume loop:
                 config=run_config
             )
 ```
-
 This loop dynamically checks if the execution state is paused on an interrupt,
 captures the current thread state, and calls `invoke` with the
 `Command(resume=...)` object to resume execution, confirming recovery and state
@@ -162,84 +137,68 @@ persistence.
 ## 7. Extension work
 
 We completed two high-value extensions:
-
 1. **Real Human-in-the-Loop (HITL) Interrupts**: Fully implemented dynamic
-  `interrupt()` and resume capabilities, including an auto-resumer runner in
+   `interrupt()` and resume capabilities, including an auto-resumer runner in
    `cli.py` to handle automated batch testing.
 2. **SQLite Checkpointer (WAL Mode)**: Built a durable Sqlite-based checkpointer
-  using `SqliteSaver` in WAL mode for crash recovery and execution history
+   using `SqliteSaver` in WAL mode for crash recovery and execution history
    tracking.
-
-
 
 ## 8. Improvement plan
 
 If we had one more day, we would prioritize:
-
 1. **Parallel fan-out execution**: Use LangGraph `Send` to execute multiple tool
-  checks concurrently to reduce agent latency.
+   checks concurrently to reduce agent latency.
 2. **Interactive UI**: Develop a Streamlit/Gradio front-end where the user can
-  view the proposed risky action and click "Approve" or "Reject" to resume
+   view the proposed risky action and click "Approve" or "Reject" to resume
    the graph interactively.
 3. **Structured Eval Node**: Enhance the `evaluate_node` LLM prompt with strict
-  validation metrics to automatically detect hallucinations in response
+   validation metrics to automatically detect hallucinations in response
    generation.
-
-
 
 ## 9. Graph Diagram
 
 ```mermaid
-flowchart TD
-    start([Start])
-    intake[Intake]
-    classify[Classify]
-    tool[Tool]
-    evaluate[Evaluate]
-    answer[Answer]
-    clarify[Clarify]
-    risky_action[Risky Action]
-    approval[Approval]
-    retry[Retry]
-    dead_letter[Dead Letter]
-    finalize[Finalize]
-    end([End])
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	intake(intake)
+	classify(classify)
+	tool(tool)
+	evaluate(evaluate)
+	answer(answer)
+	clarify(clarify)
+	risky_action(risky_action)
+	approval(approval)
+	retry(retry)
+	dead_letter(dead_letter)
+	finalize(finalize)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> intake;
+	answer --> finalize;
+	approval -.-> clarify;
+	approval -.-> tool;
+	clarify --> finalize;
+	classify -.-> answer;
+	classify -.-> clarify;
+	classify -.-> retry;
+	classify -.-> risky_action;
+	classify -.-> tool;
+	dead_letter --> finalize;
+	evaluate -.-> answer;
+	evaluate -.-> retry;
+	intake --> classify;
+	retry -.-> dead_letter;
+	retry -.-> tool;
+	risky_action --> approval;
+	tool --> evaluate;
+	finalize --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc
 
-    start --> intake
-    intake --> classify
-
-    classify --> tool
-    classify --> answer
-    classify --> clarify
-    classify --> retry
-    classify --> risky_action
-
-    tool --> evaluate
-
-    evaluate --> answer
-    evaluate --> retry
-
-    risky_action --> approval
-
-    approval -.-> tool
-    approval -.-> clarify
-
-    retry -.-> tool
-    retry -.-> dead_letter
-
-    answer --> finalize
-    clarify --> finalize
-    dead_letter --> finalize
-
-    finalize --> end
-
-    classDef default fill:#f2f0ff
-    classDef first fill:#e0f2fe,stroke:#0284c7
-    classDef last fill:#dcfce7,stroke:#15803d
-
-    class start first
-    class end last
 ```
-
-
-
