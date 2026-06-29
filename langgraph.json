@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "support_ticket_agent": "./src/langgraph_agent_lab/graph.py:graph"
+  },
+  "env": ".env"
+}

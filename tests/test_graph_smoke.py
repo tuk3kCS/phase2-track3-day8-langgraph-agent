@@ -9,6 +9,9 @@ because classify_node and answer_node use real LLM calls.
 
 import importlib.util
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 import pytest
 

@@ -120,25 +120,67 @@ The grading script will also test with scenarios you haven't seen.
 
 ## Quick start
 
-```bash
-# Option A: conda
-conda activate ai-lab
-pip install -e '.[dev]'
-pip install langchain-openai  # or langchain-anthropic
-
-# Option B: venv
+### 1. Set Up Python Virtual Environment
+We recommend using Python's standard `venv` to keep dependencies isolated:
+```powershell
+# Create virtual environment
 python -m venv .venv
+
+# Activate virtual environment
+# Windows (PowerShell):
+.\.venv\Scripts\Activate.ps1
+# Windows (CMD):
+.\.venv\Scripts\activate.bat
+# Linux/macOS:
 source .venv/bin/activate
-pip install -e '.[dev]'
-pip install langchain-openai  # or langchain-anthropic
-
-# Configure LLM
-cp .env.example .env
-# Edit .env — set your API key
-
-# Verify setup
-make test  # some tests will fail until you implement TODOs
 ```
+
+### 2. Install Project Dependencies
+Install the package in editable mode along with dev, openai, and sqlite checkpointer dependencies:
+```powershell
+pip install -e ".[dev,openai,sqlite]"
+pip install python-dotenv
+```
+
+### 3. Configure Environment Variables
+Copy `.env.example` to `.env` and set your OpenAI API key:
+```powershell
+cp .env.example .env
+```
+Inside `.env`, configure the following keys:
+- `OPENAI_API_KEY`: Your OpenAI API key (e.g. `sk-proj-...`).
+- `LANGGRAPH_INTERRUPT`: Set to `true` to enable Human-in-the-loop (HITL) interrupt mode.
+- `CHECKPOINTER`: Set to `sqlite` or `memory`.
+
+### 4. Running the Project
+
+- **Run Unit Tests (pytest)**:
+  Runs the test suite including graph topology validation and end-to-end LLM flow smoke tests:
+  ```powershell
+  .\.venv\Scripts\pytest
+  ```
+
+- **Run Scenario Simulations**:
+  Executes the 7 support scenarios (simple query, tool lookup, vague queries, risky actions with approvals, transient errors with retry, dead letters) and writes the results to `outputs/metrics.json` and full traces to `outputs/execution_traces.json`:
+  ```powershell
+  .\.venv\Scripts\python.exe -m langgraph_agent_lab.cli run-scenarios --config configs/lab.yaml --output outputs/metrics.json
+  ```
+
+- **Validate Metrics & Grade Locally**:
+  Checks the metrics JSON output schema to ensure it complies with grading standards:
+  ```powershell
+  .\.venv\Scripts\python.exe -m langgraph_agent_lab.cli validate-metrics --metrics outputs/metrics.json
+  ```
+
+- **Inspect Execution Traces & Logs**:
+  Inspect the generated `outputs/execution_traces.json` to view detailed step-by-step node execution traces, checks, retry attempts, and dead letter logs for each scenario.
+
+- **Check Code Quality & Formatting**:
+  We use `ruff` for linting and `mypy` for strict typechecking:
+  ```powershell
+  .\.venv\Scripts\ruff check src
+  .\.venv\Scripts\mypy src
+  ```
 
 ---
 

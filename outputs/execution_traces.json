@@ -1,0 +1,520 @@
+[
+  {
+    "scenario_id": "S01_simple",
+    "query": "How do I reset my password?",
+    "expected_route": "simple",
+    "actual_route": "simple",
+    "success": true,
+    "attempts": 0,
+    "max_attempts": 3,
+    "messages": [
+      "intake:How do I reset my password?"
+    ],
+    "tool_results": [],
+    "errors": [],
+    "events": [
+      {
+        "node": "intake",
+        "event_type": "completed",
+        "message": "query normalized",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "classify",
+        "event_type": "completed",
+        "message": "classified query as simple",
+        "latency_ms": 0,
+        "metadata": {
+          "route": "simple",
+          "risk_level": "low"
+        }
+      },
+      {
+        "node": "answer",
+        "event_type": "completed",
+        "message": "generated response: To reset your password, please follow these steps:\n\n1. Go to the login page of the website or application.\n2. Click on the \"Forgot Password?\" link.\n3. Enter the email address associated with your account and submit the form.\n4. Check your email for a password reset link. If you don’t see it, please check your spam or junk folder.\n5. Click on the link in the email and follow the instructions to create a new password.\n\nIf you encounter any issues during this process, feel free to reach out for further assistance!",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "finalize",
+        "event_type": "completed",
+        "message": "workflow finished",
+        "latency_ms": 0,
+        "metadata": {}
+      }
+    ],
+    "proposed_action": "",
+    "approval": null,
+    "final_answer": "To reset your password, please follow these steps:\n\n1. Go to the login page of the website or application.\n2. Click on the \"Forgot Password?\" link.\n3. Enter the email address associated with your account and submit the form.\n4. Check your email for a password reset link. If you don’t see it, please check your spam or junk folder.\n5. Click on the link in the email and follow the instructions to create a new password.\n\nIf you encounter any issues during this process, feel free to reach out for further assistance!",
+    "pending_question": ""
+  },
+  {
+    "scenario_id": "S02_tool",
+    "query": "Please lookup order status for order 12345",
+    "expected_route": "tool",
+    "actual_route": "tool",
+    "success": true,
+    "attempts": 0,
+    "max_attempts": 3,
+    "messages": [
+      "intake:Please lookup order status for order 123"
+    ],
+    "tool_results": [
+      "SUCCESS: Order details / Action executed for query 'Please lookup order status for order 12345'"
+    ],
+    "errors": [],
+    "events": [
+      {
+        "node": "intake",
+        "event_type": "completed",
+        "message": "query normalized",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "classify",
+        "event_type": "completed",
+        "message": "classified query as tool",
+        "latency_ms": 0,
+        "metadata": {
+          "route": "tool",
+          "risk_level": "low"
+        }
+      },
+      {
+        "node": "tool",
+        "event_type": "completed",
+        "message": "Executed tool, result: SUCCESS: Order details / Action executed for query 'Please lookup order status for order 12345'",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "evaluate",
+        "event_type": "completed",
+        "message": "evaluated tool result as success: The tool output indicates a successful execution of the action to lookup the order status, with no errors or issues reported.",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "answer",
+        "event_type": "completed",
+        "message": "generated response: Your order status for order number 12345 has been successfully retrieved. If you need any specific details about the status or have further questions, please let me know!",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "finalize",
+        "event_type": "completed",
+        "message": "workflow finished",
+        "latency_ms": 0,
+        "metadata": {}
+      }
+    ],
+    "proposed_action": "",
+    "approval": null,
+    "final_answer": "Your order status for order number 12345 has been successfully retrieved. If you need any specific details about the status or have further questions, please let me know!",
+    "pending_question": ""
+  },
+  {
+    "scenario_id": "S03_missing",
+    "query": "Can you fix it?",
+    "expected_route": "missing_info",
+    "actual_route": "missing_info",
+    "success": true,
+    "attempts": 0,
+    "max_attempts": 3,
+    "messages": [
+      "intake:Can you fix it?"
+    ],
+    "tool_results": [],
+    "errors": [],
+    "events": [
+      {
+        "node": "intake",
+        "event_type": "completed",
+        "message": "query normalized",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "classify",
+        "event_type": "completed",
+        "message": "classified query as missing_info",
+        "latency_ms": 0,
+        "metadata": {
+          "route": "missing_info",
+          "risk_level": "low"
+        }
+      },
+      {
+        "node": "clarify",
+        "event_type": "completed",
+        "message": "asked clarification: I’d be happy to help! Could you please provide more details about what needs to be fixed?",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "finalize",
+        "event_type": "completed",
+        "message": "workflow finished",
+        "latency_ms": 0,
+        "metadata": {}
+      }
+    ],
+    "proposed_action": "",
+    "approval": null,
+    "final_answer": "I’d be happy to help! Could you please provide more details about what needs to be fixed?",
+    "pending_question": "I’d be happy to help! Could you please provide more details about what needs to be fixed?"
+  },
+  {
+    "scenario_id": "S04_risky",
+    "query": "Refund this customer and send confirmation email",
+    "expected_route": "risky",
+    "actual_route": "risky",
+    "success": true,
+    "attempts": 0,
+    "max_attempts": 3,
+    "messages": [
+      "intake:Refund this customer and send confirmati"
+    ],
+    "tool_results": [
+      "SUCCESS: Order details / Action executed for query 'Refund this customer and send confirmation email'"
+    ],
+    "errors": [],
+    "events": [
+      {
+        "node": "intake",
+        "event_type": "completed",
+        "message": "query normalized",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "classify",
+        "event_type": "completed",
+        "message": "classified query as risky",
+        "latency_ms": 0,
+        "metadata": {
+          "route": "risky",
+          "risk_level": "high"
+        }
+      },
+      {
+        "node": "risky_action",
+        "event_type": "completed",
+        "message": "prepared risky action: Execute action for query: 'Refund this customer and send confirmation email'",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "approval",
+        "event_type": "completed",
+        "message": "Action approval: True",
+        "latency_ms": 0,
+        "metadata": {
+          "approval": {
+            "approved": true,
+            "reviewer": "cli-auto",
+            "comment": "Auto-approved by CLI"
+          }
+        }
+      },
+      {
+        "node": "tool",
+        "event_type": "completed",
+        "message": "Executed tool, result: SUCCESS: Order details / Action executed for query 'Refund this customer and send confirmation email'",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "evaluate",
+        "event_type": "completed",
+        "message": "evaluated tool result as success: The tool output indicates a successful execution of the action to refund the customer and send a confirmation email, with no errors or issues reported.",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "answer",
+        "event_type": "completed",
+        "message": "generated response: Thank you for your request. I have successfully processed the refund for the customer and sent a confirmation email regarding the transaction. If you have any further questions or need assistance with anything else, please feel free to ask!",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "finalize",
+        "event_type": "completed",
+        "message": "workflow finished",
+        "latency_ms": 0,
+        "metadata": {}
+      }
+    ],
+    "proposed_action": "Execute action for query: 'Refund this customer and send confirmation email'",
+    "approval": {
+      "approved": true,
+      "reviewer": "cli-auto",
+      "comment": "Auto-approved by CLI"
+    },
+    "final_answer": "Thank you for your request. I have successfully processed the refund for the customer and sent a confirmation email regarding the transaction. If you have any further questions or need assistance with anything else, please feel free to ask!",
+    "pending_question": ""
+  },
+  {
+    "scenario_id": "S05_error",
+    "query": "Timeout failure while processing request",
+    "expected_route": "error",
+    "actual_route": "error",
+    "success": true,
+    "attempts": 3,
+    "max_attempts": 3,
+    "messages": [
+      "intake:Timeout failure while processing request"
+    ],
+    "tool_results": [
+      "ERROR: Connection timed out",
+      "SUCCESS: Order details / Action executed for query 'Timeout failure while processing request'"
+    ],
+    "errors": [
+      "Attempt 1 failed.",
+      "Attempt 2 failed.",
+      "Attempt 3 failed."
+    ],
+    "events": [
+      {
+        "node": "intake",
+        "event_type": "completed",
+        "message": "query normalized",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "classify",
+        "event_type": "completed",
+        "message": "classified query as error",
+        "latency_ms": 0,
+        "metadata": {
+          "route": "error",
+          "risk_level": "low"
+        }
+      },
+      {
+        "node": "retry",
+        "event_type": "completed",
+        "message": "Incremented attempt to 1",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "tool",
+        "event_type": "completed",
+        "message": "Executed tool, result: ERROR: Connection timed out",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "evaluate",
+        "event_type": "completed",
+        "message": "evaluated tool result as needs_retry: The tool output indicates a connection timeout error, which means the action could not be completed successfully and needs to be retried.",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "retry",
+        "event_type": "completed",
+        "message": "Incremented attempt to 2",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "tool",
+        "event_type": "completed",
+        "message": "Executed tool, result: SUCCESS: Order details / Action executed for query 'Timeout failure while processing request'",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "evaluate",
+        "event_type": "completed",
+        "message": "evaluated tool result as needs_retry: The tool output indicates a timeout failure while processing the request, which suggests that the action was not completed successfully and needs to be retried.",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "retry",
+        "event_type": "completed",
+        "message": "Incremented attempt to 3",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "dead_letter",
+        "event_type": "completed",
+        "message": "max retries exceeded, escalated to dead letter",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "finalize",
+        "event_type": "completed",
+        "message": "workflow finished",
+        "latency_ms": 0,
+        "metadata": {}
+      }
+    ],
+    "proposed_action": "",
+    "approval": null,
+    "final_answer": "System failure: maximum retries exceeded. The request could not be completed.",
+    "pending_question": ""
+  },
+  {
+    "scenario_id": "S06_delete",
+    "query": "Delete customer account after support verification",
+    "expected_route": "risky",
+    "actual_route": "risky",
+    "success": true,
+    "attempts": 0,
+    "max_attempts": 3,
+    "messages": [
+      "intake:Delete customer account after support ve"
+    ],
+    "tool_results": [
+      "SUCCESS: Order details / Action executed for query 'Delete customer account after support verification'"
+    ],
+    "errors": [],
+    "events": [
+      {
+        "node": "intake",
+        "event_type": "completed",
+        "message": "query normalized",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "classify",
+        "event_type": "completed",
+        "message": "classified query as risky",
+        "latency_ms": 0,
+        "metadata": {
+          "route": "risky",
+          "risk_level": "high"
+        }
+      },
+      {
+        "node": "risky_action",
+        "event_type": "completed",
+        "message": "prepared risky action: Execute action for query: 'Delete customer account after support verification'",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "approval",
+        "event_type": "completed",
+        "message": "Action approval: True",
+        "latency_ms": 0,
+        "metadata": {
+          "approval": {
+            "approved": true,
+            "reviewer": "cli-auto",
+            "comment": "Auto-approved by CLI"
+          }
+        }
+      },
+      {
+        "node": "tool",
+        "event_type": "completed",
+        "message": "Executed tool, result: SUCCESS: Order details / Action executed for query 'Delete customer account after support verification'",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "evaluate",
+        "event_type": "completed",
+        "message": "evaluated tool result as success: The tool output indicates a successful execution of the action to delete the customer account after support verification, with no errors or issues reported.",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "answer",
+        "event_type": "completed",
+        "message": "generated response: Thank you for your request. I can confirm that your customer account has been successfully deleted following the necessary support verification. If you have any further questions or need assistance with anything else, please feel free to reach out.",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "finalize",
+        "event_type": "completed",
+        "message": "workflow finished",
+        "latency_ms": 0,
+        "metadata": {}
+      }
+    ],
+    "proposed_action": "Execute action for query: 'Delete customer account after support verification'",
+    "approval": {
+      "approved": true,
+      "reviewer": "cli-auto",
+      "comment": "Auto-approved by CLI"
+    },
+    "final_answer": "Thank you for your request. I can confirm that your customer account has been successfully deleted following the necessary support verification. If you have any further questions or need assistance with anything else, please feel free to reach out.",
+    "pending_question": ""
+  },
+  {
+    "scenario_id": "S07_dead_letter",
+    "query": "System failure cannot recover after multiple attempts",
+    "expected_route": "error",
+    "actual_route": "error",
+    "success": true,
+    "attempts": 1,
+    "max_attempts": 1,
+    "messages": [
+      "intake:System failure cannot recover after mult"
+    ],
+    "tool_results": [],
+    "errors": [
+      "Attempt 1 failed."
+    ],
+    "events": [
+      {
+        "node": "intake",
+        "event_type": "completed",
+        "message": "query normalized",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "classify",
+        "event_type": "completed",
+        "message": "classified query as error",
+        "latency_ms": 0,
+        "metadata": {
+          "route": "error",
+          "risk_level": "low"
+        }
+      },
+      {
+        "node": "retry",
+        "event_type": "completed",
+        "message": "Incremented attempt to 1",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "dead_letter",
+        "event_type": "completed",
+        "message": "max retries exceeded, escalated to dead letter",
+        "latency_ms": 0,
+        "metadata": {}
+      },
+      {
+        "node": "finalize",
+        "event_type": "completed",
+        "message": "workflow finished",
+        "latency_ms": 0,
+        "metadata": {}
+      }
+    ],
+    "proposed_action": "",
+    "approval": null,
+    "final_answer": "System failure: maximum retries exceeded. The request could not be completed.",
+    "pending_question": ""
+  }
+]
